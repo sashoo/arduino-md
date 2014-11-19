@@ -1,0 +1,8 @@
+float volts(int lvl, int max_value, int dac_resolution) {
+  return float(lvl/(2 << (dac_resolution - 1)) * max_value);
+}
+
+int level(float value, float max_value, int dac_resolution=12) {
+  return int(value/max_value * (2 << (dac_resolution - 1)) )
+}
+
