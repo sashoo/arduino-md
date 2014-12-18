@@ -60,10 +60,11 @@ void Generator::iterate(float dt = 0.01) {
   float Eqs   = this->Eqs;
   float nu    = this->nu;
   float delta = this->delta;
+  this->power = this->P(delta, Eqs, nu, U);
   
   
   this->delta += dt*(this->omega - this->omega0);
-  this->omega += dt*this->omega_nom/this->Tj*(this->Pt - this->P(delta, Eqs, nu, U));  
+  this->omega += dt*this->omega_nom/this->Tj*(this->Pt - this->power);  
   this->Eqs   += dt/this->Td0*(this->Eqe - this->Eq(delta, Eqs, nu, U)); 
   this->Eqe   += dt/this->Te*(this->x3-this->Eqe);
   this->x3    += dt/this->Tu*( this->k0u*(this->Ug0 - U) - this->x3);
@@ -73,10 +74,24 @@ void Generator::iterate(float dt = 0.01) {
   this->Eqs = constrain(this->Eqs, 0, 3.3);
   this->output(this->Eqs);
   
-  //analogWrite(DAC0, level(this->Eqs, 3.3f, 12));
-
+  //float m_power = map(this->power, 0, 3.3f)
+  
+  analogWrite(DAC0, level(this->power*1000.f, 3.3f, 12));
+  //analogWrite(DAC1, level(this->omega/this->omega_nom*2.f, 3.3f, 12));
+  analogWrite(DAC1, level((this->omega-this->omega_nom)/this->omega_nom*10.f, 3.3f, 12));
 }
 
+void Generator::log_data() {
+  SerialUSB.print('P: ');
+  SerialUSB.println(this->power);
+  SerialUSB.print('omega: ');
+  SerialUSB.println(this->omega);
+  SerialUSB.print('U: ');
+  SerialUSB.println(this->U);
+  SerialUSB.print('Eqs: ');
+  SerialUSB.println(this->Eqs);
+  SerialUSB.println('***');
+}
 
 // outputs voltage; takes voltage level (3.3V or 5.0 into consideration)
 void Generator::output(float value) {

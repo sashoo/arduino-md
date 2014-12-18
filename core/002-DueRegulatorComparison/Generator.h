@@ -48,6 +48,7 @@ class Generator {
   public:
     Generator(float voltage_level, int output_type, int pin_output, int pin_feedback, int pin_ld=0);
     void init();
+    void log_data();
     
     // set regulator parameters
     void setARV(float Tj = 8.81, float Td0 = 5.02, float Te = 0.04, float Tu = 0.05, float k0u=100.f);
@@ -69,6 +70,7 @@ class Generator {
     float x30,    x3;
     float Ug0,    U;
     float Eqe0,   Eqe;  
+    float power;
     
     float nu = 0.f;
     

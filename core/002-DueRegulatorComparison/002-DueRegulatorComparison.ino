@@ -24,12 +24,15 @@ void setup() {
   pinMode(LD0, OUTPUT);
   pinMode(CS0, OUTPUT);
   pinMode(CLR, OUTPUT);
+  pinMode(A8, INPUT);
   
   //G1 = Generator(A0, DAC0);
   G1.init();
   
   Timer3.attachInterrupt(generator_step);
   Timer3.start(dt*1000000); // in us
+  //Timer4.attachInterrupt(generator_log);
+  //Timer4.start(1*1000000);
 
   analogReadResolution(12); 
   analogWriteResolution(12);
@@ -41,11 +44,20 @@ void setup() {
   
   //analogWrite(DAC0, level(1.5f));
   G1.output(1.5f);
+  
+  //SerialUSB.begin(9600);
+  //while (!SerialUSB) ;
+  //SerialUSB.println('working on due!');
 }
 
 void generator_step() {
   G1.iterate(dt);
   //G1.output();
+}
+
+void generator_log() {
+  //G1.log_data();
+  SerialUSB.println('working on due!'); 
 }
 
 void loop() {
