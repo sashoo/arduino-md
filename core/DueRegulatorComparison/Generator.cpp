@@ -51,6 +51,12 @@ float Generator::P(float delta, float Eqs, float nu, float U) {
   return Eqs*U/this->Xds*sin(delta-nu) - U*U/2*(this->Xq-this->Xds)/this->Xq/this->Xds*sin(2*(delta-nu));
 }
 
+float Generator::Pe(float V) {
+  float shunt_drop = volts(analogRead(A0), this->voltage_level, 12);
+  float I = shunt_drop / 120.f;
+  return I * V;  
+}
+
 float Generator::Eq(float delta, float Eqs, float nu, float U) {
   return Eqs*this->Xd/this->Xds - U*(this->Xd-this->Xds)/this->Xds*cos(delta - nu);
 }
@@ -63,7 +69,8 @@ void Generator::iterate(float dt = 0.01) {
   float Eqs   = this->Eqs;
   float nu    = this->nu;
   float delta = this->delta;
-  this->power = this->P(delta, Eqs, nu, U);
+  //this->power = this->P(delta, Eqs, nu, U);
+  this->power = this->Pe(U);
   
   
   this->delta += dt*(this->omega - this->omega0);
@@ -75,6 +82,9 @@ void Generator::iterate(float dt = 0.01) {
   // speed regulator
   this->q  += dt/this->Tw * ( this->k0w*(this->omega0 - this->omega) - this->q );
   this->Pt += dt/this->Tt * ( this->q - this->Pt );
+  
+  if (this->Pt < 0)
+    this->Pt = 0.f;
 
   //analogWrite(this->pinEqs, level(this->Eqs));
   //output(this->Eqs);

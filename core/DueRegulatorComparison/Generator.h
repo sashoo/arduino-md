@@ -66,6 +66,7 @@ class Generator {
     
     float P(float delta, float Eqs, float nu, float U);
     float Eq(float delta, float Eqs, float nu, float U);
+    float Pe(float V);
     
     float delta0; 
     float delta;
