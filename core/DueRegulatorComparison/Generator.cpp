@@ -2,8 +2,15 @@
 #include "Arduino.h"
 #include "VoltConvert.h"
 #include "spi_helper.h"
+#include "waveform.h"
+#include "common.h"
 
 #include <math.h>
+
+#define SQRT2 sqrt(2)
+#define INV_AMP 0.4285496f // 1/3.3*sqrt(2)/1000.f
+//#define FV_AMP V_AMP/1000.f
+//#define FV_AMP 2.047f
 
 
 Generator::Generator(float voltage_level, int output_type, int pin_output, int pin_feedback, int pin_ld) {
@@ -89,14 +96,17 @@ void Generator::iterate(float dt = 0.01) {
   //analogWrite(this->pinEqs, level(this->Eqs));
   //output(this->Eqs);
   this->Eqs = constrain(this->Eqs, 0, 3.3);
-  this->output(this->Eqs);
+  
+  //this->output(this->Eqs);
   
   //float m_power = map(this->power, 0, 3.3f)
   
   // auxillary output for chart comparison
-  analogWrite(DAC0, level(this->Pt*1000.f, 3.3f, 12));
+  //analogWrite(DAC0, level(this->Pt*1000.f, 3.3f, 12)); 
+  //analogWrite(DAC1, level((this->omega/this->omega_nom)*1.0f, 3.3f, 12));
+  
+  
   //analogWrite(DAC1, level(this->omega/this->omega_nom*2.f, 3.3f, 12));
-  analogWrite(DAC1, level((this->omega/this->omega_nom)*1.0f, 3.3f, 12));
 }
 
 void Generator::log_data() {
@@ -120,6 +130,28 @@ void Generator::output(float value) {
     int lvl = level(value, this->voltage_level, 12);
     //analogWrite(this->pin_output, lvl);
     analogWrite(this->pin_output, lvl);
+  }
+  else if (this->output_type == DAC_EXTERN) {
+    int lvl = level_8512(value);
+    digitalWrite(this->pin_ld, HIGH);
+    SPI_send12(this->pin_output, lvl);
+    digitalWrite(this->pin_ld, LOW);
+  }
+}
+
+void Generator::wave_output(float value) {
+  // FIXME: hardcoded resolution
+  int local_step = wave_step + this->wave_shift;
+  if (local_step >= PHI_STEPS) local_step = 0;  
+  
+  //value = this->Eqs * INV_AMP * sine_wave[local_step];
+  value = 1.5f * INV_AMP * sine_wave[local_step];
+  
+
+  if (this->output_type == DAC_INTERN) {
+    //int lvl = level(value, this->voltage_level, 12);
+    //analogWrite(this->pin_output, lvl);
+    analogWrite(this->pin_output, int(value));
   }
   else if (this->output_type == DAC_EXTERN) {
     int lvl = level_8512(value);

@@ -37,16 +37,7 @@ class Generator {
     // pin that measures voltage and acts as measurement feedback
     int pin_feedback; 
     
-    // chip-select pin: 
-    // * for internal (DAC_INTERN) Due DAC it's a DAC{0, 1},   
-    // * for external (DAC_EXTERN) DAC it's any digital pin 
-    //   used as chip-select/slave select (CS/SS) 
-    int pin_output;    
-    
-    // pin that writes data to output register of DAC8512
-    // (strobe pin)
-    // exclusive to DAC_EXTERN output with DAC8512 in use
-    int pin_ld;
+
   
   public:
     Generator(float voltage_level, int output_type, int pin_output, int pin_feedback, int pin_ld=0);
@@ -58,11 +49,12 @@ class Generator {
                 float Tw = 0.05, float Tt  = 0.8,  float k0u=100.f,  float k0w  =0.2f);
     // set generator impedances
     void setImpedance(float Xd=2310.f, float Xds=770.f, float Xq=1500.f);
-    void setParams(float delta0 = 0.6, float omega0 = 2*PI*50.f, float Eqs0 = 1.5f, 
-                   float x30=0.f, float Ug0=1.5f);
+    void setParams(float delta0 = 0.6, float omega0 = 2*PI*50.f, float Eqs0 = 1.0f, 
+                   float x30=0.f, float Ug0=1.0f);
     
     void iterate(float dt);
     void output(float value);
+    void wave_output(float value);
     
     float P(float delta, float Eqs, float nu, float U);
     float Eq(float delta, float Eqs, float nu, float U);
@@ -76,11 +68,24 @@ class Generator {
     float Ug0,    U;
     float Eqe0,   Eqe;  
     float power;
+    
+    int wave_shift = 0;
 
     float Pt = 0.f;
     float q  = 0.f;
     
     float nu = 0.f; 
+    
+        // chip-select pin: 
+    // * for internal (DAC_INTERN) Due DAC it's a DAC{0, 1},   
+    // * for external (DAC_EXTERN) DAC it's any digital pin 
+    //   used as chip-select/slave select (CS/SS) 
+    int pin_output;    
+    
+    // pin that writes data to output register of DAC8512
+    // (strobe pin)
+    // exclusive to DAC_EXTERN output with DAC8512 in use
+    int pin_ld;
   };
   
 #endif
