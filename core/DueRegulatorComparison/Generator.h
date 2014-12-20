@@ -15,7 +15,10 @@ class Generator {
     float Td0 = 5.02;
     float Te  = 0.04;
     float Tu  = 0.05;    
+    float Tw  = 0.05;    
+    float Tt  = 0.80;    
     float k0u = 100.f;
+    float k0w = 1.0; // FIXME
     
     // *** generator impedances ***
     float Xd;
@@ -51,7 +54,8 @@ class Generator {
     void log_data();
     
     // set regulator parameters
-    void setARV(float Tj = 8.81, float Td0 = 5.02, float Te = 0.04, float Tu = 0.05, float k0u=100.f);
+    void setARV(float Tj = 8.81, float Td0 = 5.02, float Te =  0.04, float Tu  = 0.05,
+                float Tw = 0.05, float Tt  = 0.8,  float k0u=100.f,  float k0w  =0.2f);
     // set generator impedances
     void setImpedance(float Xd=2310.f, float Xds=770.f, float Xq=1500.f);
     void setParams(float delta0 = 0.6, float omega0 = 2*PI*50.f, float Eqs0 = 1.5f, 
@@ -71,10 +75,11 @@ class Generator {
     float Ug0,    U;
     float Eqe0,   Eqe;  
     float power;
+
+    float Pt = 0.f;
+    float q  = 0.f;
     
-    float nu = 0.f;
-    
-    float Pt;   
+    float nu = 0.f; 
   };
   
 #endif

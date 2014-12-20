@@ -20,12 +20,15 @@ void Generator::init() {
   this->setParams();
 }
 
-void Generator::setARV(float Tj, float Td0, float Te, float Tu, float k0u) {
+void Generator::setARV(float Tj, float Td0, float Te, float Tu, float Tw, float Tt, float k0u, float k0w) {
   this->Tj  = Tj;
   this->Td0 = Td0;
   this->Te  = Te;
   this->Tu  = Tu;
+  this->Tw  = Tw;
+  this->Tt  = Tt;
   this->k0u = k0u;
+  this->k0w = k0w;
 }
 
 void Generator::setImpedance(float Xd, float Xds, float Xq) {
@@ -41,7 +44,7 @@ void Generator::setParams(float delta0, float omega0, float Eqs0, float x30, flo
   this->x30    = this->x3    = x30;
   this->Ug0    = this->U     = Ug0;
   this->Eqe0   = this->Eqe   = this->Eq(delta0, Eqs0, 0, Ug0);
-  this->Pt     = this->P(delta0, Eqs0, 0, Ug0);
+  //this->Pt     = this->P(delta0, Eqs0, 0, Ug0);
 }
 
 float Generator::P(float delta, float Eqs, float nu, float U) {
@@ -69,6 +72,10 @@ void Generator::iterate(float dt = 0.01) {
   this->Eqe   += dt/this->Te*(this->x3-this->Eqe);
   this->x3    += dt/this->Tu*( this->k0u*(this->Ug0 - U) - this->x3);
 
+  // speed regulator
+  this->q  += dt/this->Tw * ( this->k0w*(this->omega0 - this->omega) - this->q );
+  this->Pt += dt/this->Tt * ( this->q - this->Pt );
+
   //analogWrite(this->pinEqs, level(this->Eqs));
   //output(this->Eqs);
   this->Eqs = constrain(this->Eqs, 0, 3.3);
@@ -76,9 +83,10 @@ void Generator::iterate(float dt = 0.01) {
   
   //float m_power = map(this->power, 0, 3.3f)
   
-  analogWrite(DAC0, level(this->power*1000.f, 3.3f, 12));
+  // auxillary output for chart comparison
+  analogWrite(DAC0, level(this->Pt*1000.f, 3.3f, 12));
   //analogWrite(DAC1, level(this->omega/this->omega_nom*2.f, 3.3f, 12));
-  analogWrite(DAC1, level((this->omega-this->omega_nom)/this->omega_nom*10.f, 3.3f, 12));
+  analogWrite(DAC1, level((this->omega/this->omega_nom)*1.0f, 3.3f, 12));
 }
 
 void Generator::log_data() {
